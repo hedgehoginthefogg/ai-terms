@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Terms Flashcard Game - 2 Players</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .player-selection {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .player-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        .player-button.player-a {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        }
+        
+        .player-button.player-a:hover {
+            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.4);
+        }
+        
+        .player-button.player-b {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        
+        .player-button.player-b:hover {
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .player-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .player-button:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 3px;
+        }
+        
+        .player-button:active {
+            transform: translateY(0);
+        }
+        
+        .game-area {
+            display: none;
+        }
+        
+        .game-area.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        
+        .current-player {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .flashcard {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border: 2px solid #cbd5e0;
+            border-radius: 12px;
+            padding: 40px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .role-label {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .term {
+            color: #1a202c;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        
+        .definition {
+            color: #2d3748;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        
+        .instructions {
+            background: #fff5e6;
+            border-left: 4px solid #f6ad55;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            color: #744210;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 3px;
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .completion-screen {
+            text-align: center;
+            display: none;
+        }
+        
+        .completion-screen.active {
+            display: block;
+        }
+        
+        .completion-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .completion-title {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .completion-message {
+            color: #4a5568;
+            font-size: 18px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .player-button {
+                padding: 15px 30px;
+                font-size: 18px;
+            }
+            
+            .term {
+                font-size: 24px;
+            }
+            
+            .definition {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Terms Flashcard Game</h1>
+        <p class="subtitle">A cooperative learning game for two players</p>
+        
+        <!-- Screen reader announcements -->
+        <div id="announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+        
+        <!-- Player Selection Screen -->
+        <div id="player-selection" class="player-selection-screen">
+            <div class="instructions">
+                <strong>Welcome!</strong> One player should choose "Player A" and the other should choose "Player B". You'll take turns explaining terms to each other.
+            </div>
+            <div class="player-selection">
+                <button class="player-button player-a" onclick="startGame('A')" tabindex="0">
+                    I'm Player A
+                </button>
+                <button class="player-button player-b" onclick="startGame('B')" tabindex="0">
+                    I'm Player B
+                </button>
+            </div>
+        </div>
+        
+        <!-- Game Area -->
+        <div id="game-area" class="game-area">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            
+            <div class="card-info">
+                <span class="current-player">Current: <span id="current-player-name"></span></span>
+                <span id="card-counter">Card 1 of 16</span>
+            </div>
+            
+            <div id="instructions" class="instructions"></div>
+            
+            <div class="flashcard">
+                <div class="role-label" id="role-label"></div>
+                <div id="card-content"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="resetGame()" tabindex="0">
+                    Start Over
+                </button>
+                <button class="btn btn-secondary" id="prev-btn" onclick="previousCard()" tabindex="0" disabled>
+                    Previous Card
+                </button>
+                <button class="btn" id="next-btn" onclick="nextCard()" tabindex="0">
+                    Next Card
+                </button>
+            </div>
+        </div>
+        
+        <!-- Completion Screen -->
+        <div id="completion-screen" class="completion-screen">
+            <div class="completion-icon">🎉</div>
+            <h2 class="completion-title">Congratulations!</h2>
+            <p class="completion-message">
+                You've completed all 16 AI terms together!<br>
+                Great teamwork!
+            </p>
+            <button class="btn" onclick="resetGame()" tabindex="0">
+                Play Again
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Flashcard data - ordered from simplest to most complicated
+        const flashcards = [
+            {
+                term: "Prompt",
+                definition: "An instruction you give to an LLM. There are certain 'prompting techniques' that have been found to help LLMs perform well, such as giving examples."
+            },
+            {
+                term: "LLM (Large-language model)",
+                definition: "An LLM is a Large-Language Model, a type of Generative AI that has been trained on lots of examples of text so that it can identify statistical patterns between words and ideas and consequently generate new text based on these patterns."
+            },
+            {
+                term: "Hallucinate",
+                definition: "When an LLM confidently states something plausible but completely fabricated. Occurs because models create statistically probable content rather than necessarily 'correct' content. Not all AI mistakes are hallucinations; some mistakes are based on incorrect data."
+            },
+            {
+                term: "Token",
+                definition: "How LLMs process text – not necessarily full words, but parts of words or punctuation. 'Unbreakable' = three tokens: 'un', 'break', 'able'. OpenAI estimates 1 token ≈ 0.75 words. Important because context windows (how much info an LLM can 'remember') are specified in tokens."
+            },
+            {
+                term: "Context window",
+                definition: "How much information an LLM can hold in 'working memory' at once. For LSE Claude users: 500,000 tokens (around 400,000 words). Performance may decrease in very long conversations."
+            },
+            {
+                term: "Knowledge cut-off point",
+                definition: "The date after which an AI model has no built-in knowledge of world events, based on when training data was collected. Claude's newest models: January 2025. Models need web search for information after this date. To reliably get up-to-date info, explicitly tell the LLM to use web search."
+            },
+            {
+                term: "Claude Artifact",
+                definition: "Content created by Claude and shown in a separate panel or shared as a standalone link. Can be documents, visualizations, or interactive web-apps. Shareable with anyone who has LSE Claude account access. ChatGPT and Google Gemini have similar features called 'Canvas'."
+            },
+            {
+                term: "Role and goal (prompting technique)",
+                definition: "Giving an LLM a specific role (e.g., 'patient tutor') and goal (e.g., 'help students construct knowledge'). One of the best ways to control chatbot behavior."
+            },
+            {
+                term: "Constraints (prompting technique)",
+                definition: "Instructions specifying what the LLM must do or avoid. Positive constraints ('do this') work more reliably than negative ones ('don't do this')."
+            },
+            {
+                term: "Chain-of-thought prompting",
+                definition: "Breaking down a complex task into logical steps in your instructions: for an LLM: 'First, do X. Then, do Y. Finally, do Z.' Helps the model process tasks systematically."
+            },
+            {
+                term: "AI sycophancy",
+                definition: "The tendency of an LLM to agree with a user's perspective rather than offering neutral or critical viewpoints. Counter this by explicitly instructing the LLM to provide critical feedback or varied perspectives."
+            },
+            {
+                term: "System Prompt",
+                definition: "Instructions that control an LLM's behavior in every chat. Many companies keep these secret, but Anthropic makes Claude's system prompts publicly available on their website. Useful for understanding LLM behavior and improving your own prompts."
+            },
+            {
+                term: "Claude Project",
+                definition: "Claude Projects are essential custom versions of Claude you can set up with your own instructions and access to documents you upload. Similar to OpenAI's Custom GPTs, Microsoft Copilot Agents, Google Gemini Gems."
+            },
+            {
+                term: "Copilot Agent",
+                definition: "Microsoft's feature for creating chatbots with custom instructions. Similar to OpenAI's Custom GPTs. Premium licenses allow access to files in SharePoint and tools like Python. Typically shareable only within the same institution."
+            },
+            {
+                term: "'Reasoning' model",
+                definition: "Newer LLM versions that have been trained to automatically do things like create plans, ask clarifying questions and work step-by-step. Most models activate 'reasoning' based on query complexity. In Claude you can turn on 'Extended thinking' mode for more complicated tasks."
+            },
+            {
+                term: "Agent / Agentic",
+                definition: "An AI model or series of models that can use tools (like coding tools or web browsers) and act autonomously toward a goal. Note: 'Copilot Agent' is a slightly misleading name for a feature in Copilot that is more of a custom chatbot that a real 'Agent'. Copilot Agents are similar to Claude Projects or OpenAI's Custom GPTs."
+            }
+        ];
+        
+        let currentPlayer = '';
+        let currentCardIndex = 0;
+        let playerARole = 'explainer'; // 'explainer' or 'listener'
+        
+        function announce(message) {
+            const announcementDiv = document.getElementById('announcements');
+            announcementDiv.textContent = message;
+        }
+        
+        function startGame(player) {
+            currentPlayer = player;
+            currentCardIndex = 0;
+            playerARole = 'explainer'; // Player A starts as explainer
+            
+            document.getElementById('player-selection').style.display = 'none';
+            document.getElementById('game-area').classList.add('active');
+            
+            announce(`Game started. You are Player ${player}. Loading first card.`);
+            displayCard();
+        }
+        
+        function displayCard() {
+            const card = flashcards[currentCardIndex];
+            const isExplainer = (currentPlayer === 'A' && playerARole === 'explainer') || 
+                               (currentPlayer === 'B' && playerARole === 'listener');
+            
+            // Update progress
+            const progress = ((currentCardIndex + 1) / flashcards.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('card-counter').textContent = `Card ${currentCardIndex + 1} of ${flashcards.length}`;
+            
+            // Update player name
+            document.getElementById('current-player-name').textContent = `Player ${currentPlayer}`;
+            
+            // Update button states
+            const prevBtn = document.getElementById('prev-btn');
+            prevBtn.disabled = currentCardIndex === 0;
+            
+            // Set role and content
+            const roleLabel = document.getElementById('role-label');
+            const cardContent = document.getElementById('card-content');
+            const instructions = document.getElementById('instructions');
+            
+            if (isExplainer) {
+                roleLabel.textContent = 'Your Term (Explain This)';
+                cardContent.innerHTML = `<div class="term">${card.term}</div>`;
+                instructions.innerHTML = `<strong>Your role:</strong> Try to explain the term "<strong>${card.term}</strong>" to your partner. If you're not sure, you can ask your partner for help.`;
+                announce(`Your turn to explain. The term is: ${card.term}`);
+            } else {
+                roleLabel.textContent = 'The Definition (Listen & Help)';
+                cardContent.innerHTML = `<div class="definition">${card.definition}</div>`;
+                instructions.innerHTML = `<strong>Your role:</strong> Listen to your partner's explanation of the term. If they need help, provide hints or read the correct definition to them.`;
+                announce(`Your turn to listen and help. You have the definition for the term your partner is explaining.`);
+            }
+        }
+        
+        function previousCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                // Swap roles back
+                playerARole = playerARole === 'explainer' ? 'listener' : 'explainer';
+                displayCard();
+            }
+        }
+        
+        function nextCard() {
+            currentCardIndex++;
+            
+            if (currentCardIndex >= flashcards.length) {
+                showCompletion();
+                return;
+            }
+            
+            // Swap roles
+            playerARole = playerARole === 'explainer' ? 'listener' : 'explainer';
+            
+            displayCard();
+        }
+        
+        function showCompletion() {
+            document.getElementById('game-area').classList.remove('active');
+            document.getElementById('completion-screen').classList.add('active');
+            announce('Game completed! You have finished all cards. Congratulations!');
+        }
+        
+        function resetGame() {
+            currentCardIndex = 0;
+            playerARole = 'explainer';
+            
+            document.getElementById('completion-screen').classList.remove('active');
+            document.getElementById('game-area').classList.remove('active');
+            document.getElementById('player-selection').style.display = 'block';
+            
+            announce('Game reset. Please select your player.');
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const activeElement = document.activeElement;
+                if (activeElement.tagName === 'BUTTON') {
+                    e.preventDefault();
+                    activeElement.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
