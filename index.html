@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>AI Terms Flashcard Game - 2 Players</title>
     <style>
         * {
@@ -13,20 +13,26 @@
         
         html {
             height: 100%;
-            height: 100dvh;
+            min-height: 100%;
+            position: fixed;
+            width: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) fixed;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-attachment: fixed;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) fixed;
+            width: 100%;
+            height: 100%;
             min-height: 100%;
-            min-height: 100vh;
-            min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            margin: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .container {
@@ -106,14 +112,28 @@
         
         .game-area.active {
             display: block;
+            padding-top: 80px; /* Add space for sticky progress bar */
+        }
+        
+        .progress-section {
+            position: sticky;
+            top: -80px;
+            z-index: 10;
+            background: white;
+            margin: -80px -40px 20px -40px;
+            padding: 15px 40px 15px 40px;
+        }
+        
+        .progress-section.has-shadow {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .progress-bar {
             background: #e2e8f0;
             height: 8px;
             border-radius: 4px;
-            margin-bottom: 30px;
             overflow: hidden;
+            margin-bottom: 10px;
         }
         
         .progress-fill {
@@ -125,7 +145,7 @@
         .card-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            align-items: center;
             font-size: 14px;
             color: #4a5568;
         }
@@ -144,7 +164,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .role-label {
@@ -174,8 +194,63 @@
             background: #fff5e6;
             border-left: 4px solid #f6ad55;
             padding: 15px 20px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border-radius: 4px;
+            color: #744210;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .instructions-collapsible {
+            margin-bottom: 20px;
+        }
+        
+        .instructions-toggle {
+            background: #fff5e6;
+            border: 2px solid #f6ad55;
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #744210;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .instructions-toggle:hover {
+            background: #ffecd1;
+        }
+        
+        .instructions-toggle-icon {
+            transition: transform 0.3s;
+            font-size: 18px;
+        }
+        
+        .instructions-toggle-icon.open {
+            transform: rotate(180deg);
+        }
+        
+        .instructions-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .instructions-content.open {
+            max-height: 500px;
+        }
+        
+        .instructions-content-inner {
+            padding: 15px 16px;
+            background: #fff5e6;
+            border: 2px solid #f6ad55;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
             color: #744210;
             font-size: 15px;
             line-height: 1.5;
@@ -230,6 +305,16 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
         
+        .btn-danger {
+            background: #fc8181;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #f56565;
+            box-shadow: 0 8px 16px rgba(245, 101, 101, 0.4);
+        }
+        
         .completion-screen {
             text-align: center;
             display: none;
@@ -281,17 +366,44 @@
                 margin: 10px 0;
             }
             
+            .game-area.active {
+                padding-top: 60px;
+            }
+            
+            .progress-section {
+                margin: -60px -20px 15px -20px;
+                padding: 12px 20px 12px 20px;
+                border-radius: 16px 16px 0 0;
+                top: -60px;
+            }
+            
             h1 {
                 font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .player-selection {
+                flex-direction: column;
+                gap: 12px;
             }
             
             .player-button {
                 padding: 15px 30px;
                 font-size: 18px;
+                width: 100%;
+            }
+            
+            .card-info {
+                font-size: 12px;
+                flex-wrap: wrap;
+                gap: 8px;
             }
             
             .term {
-                font-size: 24px;
+                font-size: 22px;
             }
             
             .definition {
@@ -306,12 +418,41 @@
             }
             
             .controls {
-                gap: 10px;
+                gap: 8px;
             }
             
             .flashcard {
-                padding: 30px 20px;
-                min-height: 250px;
+                padding: 25px 20px;
+                min-height: 200px;
+                margin-bottom: 15px;
+            }
+            
+            .instructions {
+                padding: 12px 16px;
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+            
+            .instructions-toggle {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+            
+            .instructions-content-inner {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+            
+            .completion-icon {
+                font-size: 60px;
+            }
+            
+            .completion-title {
+                font-size: 24px;
+            }
+            
+            .completion-message {
+                font-size: 16px;
             }
         }
     </style>
@@ -341,16 +482,26 @@
         
         <!-- Game Area -->
         <div id="game-area" class="game-area">
-            <div class="progress-bar">
-                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            <div class="progress-section" id="progress-section">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+                
+                <div class="card-info">
+                    <span class="current-player">Current: <span id="current-player-name"></span></span>
+                    <span id="card-counter">Card 1 of 16</span>
+                </div>
             </div>
             
-            <div class="card-info">
-                <span class="current-player">Current: <span id="current-player-name"></span></span>
-                <span id="card-counter">Card 1 of 16</span>
+            <div class="instructions-collapsible">
+                <button class="instructions-toggle" onclick="toggleInstructions()" id="instructions-toggle">
+                    <span id="instructions-toggle-text">Show Instructions</span>
+                    <span class="instructions-toggle-icon" id="instructions-toggle-icon">▼</span>
+                </button>
+                <div class="instructions-content" id="instructions-content">
+                    <div class="instructions-content-inner" id="instructions-text"></div>
+                </div>
             </div>
-            
-            <div id="instructions" class="instructions"></div>
             
             <div class="flashcard">
                 <div class="role-label" id="role-label"></div>
@@ -358,11 +509,11 @@
             </div>
             
             <div class="controls">
-                <button class="btn btn-secondary" onclick="resetGame()" tabindex="0">
+                <button class="btn btn-danger" onclick="resetGame()" tabindex="0">
                     Start Over
                 </button>
                 <button class="btn btn-secondary" id="prev-btn" onclick="previousCard()" tabindex="0" disabled>
-                    Previous Card
+                    Previous
                 </button>
                 <button class="btn" id="next-btn" onclick="nextCard()" tabindex="0">
                     Next Card
@@ -417,7 +568,7 @@
             },
             {
                 term: "Role and goal (prompting technique)",
-                definition: "Giving an LLM a specific role (e.g., 'patient tutor') and goal (e.g., 'help students construct knowledge'). One of the best ways to control chatbot behavior."
+                definition: "Giving an LLM a specific role (e.g., 'patient tutor') and goal (e.g., 'help students construct knowledge'). One of the best ways to control chatbot behaviour."
             },
             {
                 term: "Constraints (prompting technique)",
@@ -437,7 +588,7 @@
             },
             {
                 term: "Claude Project",
-                definition: "Claude Projects are essential custom versions of Claude you can set up with your own instructions and access to documents you upload. Similar to OpenAI's Custom GPTs, Microsoft Copilot Agents, Google Gemini Gems."
+                definition: "Claude Projects are essentially custom versions of Claude you can set up with your own instructions and access to documents you upload. Similar to OpenAI's Custom GPTs, Microsoft Copilot Agents, Google Gemini Gems."
             },
             {
                 term: "Copilot Agent",
@@ -456,16 +607,35 @@
         let currentPlayer = '';
         let currentCardIndex = 0;
         let playerARole = 'explainer'; // 'explainer' or 'listener'
+        let instructionsOpen = false;
         
         function announce(message) {
             const announcementDiv = document.getElementById('announcements');
             announcementDiv.textContent = message;
         }
         
+        function toggleInstructions() {
+            instructionsOpen = !instructionsOpen;
+            const content = document.getElementById('instructions-content');
+            const icon = document.getElementById('instructions-toggle-icon');
+            const toggleText = document.getElementById('instructions-toggle-text');
+            
+            if (instructionsOpen) {
+                content.classList.add('open');
+                icon.classList.add('open');
+                toggleText.textContent = 'Hide Instructions';
+            } else {
+                content.classList.remove('open');
+                icon.classList.remove('open');
+                toggleText.textContent = 'Show Instructions';
+            }
+        }
+        
         function startGame(player) {
             currentPlayer = player;
             currentCardIndex = 0;
             playerARole = 'explainer'; // Player A starts as explainer
+            instructionsOpen = false;
             
             document.getElementById('player-selection').style.display = 'none';
             document.getElementById('game-area').classList.add('active');
@@ -494,19 +664,28 @@
             // Set role and content
             const roleLabel = document.getElementById('role-label');
             const cardContent = document.getElementById('card-content');
-            const instructions = document.getElementById('instructions');
+            const instructionsText = document.getElementById('instructions-text');
             
             if (isExplainer) {
                 roleLabel.textContent = 'Your Term (Explain This)';
                 cardContent.innerHTML = `<div class="term">${card.term}</div>`;
-                instructions.innerHTML = `<strong>Your role:</strong> Try to explain the term "<strong>${card.term}</strong>" to your partner. If you're not sure, you can ask your partner for help.`;
+                instructionsText.innerHTML = `<strong>Your role:</strong> Try to explain the term "<strong>${card.term}</strong>" to your partner. If you're not sure, you can ask your partner for help.`;
                 announce(`Your turn to explain. The term is: ${card.term}`);
             } else {
                 roleLabel.textContent = 'The Definition (Listen & Help)';
                 cardContent.innerHTML = `<div class="definition">${card.definition}</div>`;
-                instructions.innerHTML = `<strong>Your role:</strong> Listen to your partner's explanation of the term. If they need help, provide hints or read the correct definition to them.`;
+                instructionsText.innerHTML = `<strong>Your role:</strong> Listen to your partner's explanation of the term. If they need help, provide hints or read the correct definition to them.`;
                 announce(`Your turn to listen and help. You have the definition for the term your partner is explaining.`);
             }
+            
+            // Reset instructions to closed state for new card
+            const content = document.getElementById('instructions-content');
+            const icon = document.getElementById('instructions-toggle-icon');
+            const toggleText = document.getElementById('instructions-toggle-text');
+            content.classList.remove('open');
+            icon.classList.remove('open');
+            toggleText.textContent = 'Show Instructions';
+            instructionsOpen = false;
         }
         
         function previousCard() {
@@ -541,6 +720,7 @@
         function resetGame() {
             currentCardIndex = 0;
             playerARole = 'explainer';
+            instructionsOpen = false;
             
             document.getElementById('completion-screen').classList.remove('active');
             document.getElementById('game-area').classList.remove('active');
@@ -548,6 +728,23 @@
             
             announce('Game reset. Please select your player.');
         }
+        
+        // Add shadow to progress bar when scrolling
+        let lastScrollTop = 0;
+        const container = document.querySelector('.container');
+        const progressSection = document.getElementById('progress-section');
+        
+        container.addEventListener('scroll', function() {
+            const scrollTop = container.scrollTop;
+            
+            if (scrollTop > 10) {
+                progressSection.classList.add('has-shadow');
+            } else {
+                progressSection.classList.remove('has-shadow');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
         
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
