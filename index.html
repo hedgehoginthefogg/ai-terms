@@ -15,6 +15,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -177,6 +178,7 @@
             display: flex;
             gap: 15px;
             justify-content: center;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -262,8 +264,14 @@
         }
         
         @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+            
             .container {
                 padding: 20px;
+                margin: 10px 0;
             }
             
             h1 {
@@ -281,6 +289,22 @@
             
             .definition {
                 font-size: 16px;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .flashcard {
+                padding: 30px 20px;
+                min-height: 250px;
             }
         }
     </style>
