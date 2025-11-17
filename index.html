@@ -536,16 +536,19 @@
     </div>
     
     <script>
-        // Flashcard data - ordered from simplest to most complicated
-        const flashcards = [
-            {
-                term: "Prompt",
-                definition: "An instruction you give to an LLM. There are certain 'prompting techniques' that have been found to help LLMs perform well, such as giving examples."
-            },
+        // Flashcard data - LLM and Prompt always first, rest randomized
+        const baseFlashcards = [
             {
                 term: "LLM (Large-language model)",
                 definition: "An LLM is a Large-Language Model, a type of Generative AI that has been trained on lots of examples of text so that it can identify statistical patterns between words and ideas and consequently generate new text based on these patterns."
             },
+            {
+                term: "Prompt",
+                definition: "An instruction you give to an LLM. There are certain 'prompting techniques' that have been found to help LLMs perform well, such as giving examples."
+            }
+        ];
+        
+        const randomizableFlashcards = [
             {
                 term: "Hallucinate",
                 definition: "When an LLM confidently states something plausible but completely fabricated. Occurs because models create statistically probable content rather than necessarily 'correct' content. Not all AI mistakes are hallucinations; some mistakes are based on incorrect data."
@@ -564,7 +567,7 @@
             },
             {
                 term: "Claude Artifact",
-                definition: "Content created by Claude and shown in a separate panel or shared as a standalone link. Can be documents, visualizations, or interactive web-apps. Shareable with anyone who has LSE Claude account access. ChatGPT and Google Gemini have similar features called 'Canvas'."
+                definition: "Content created by Claude and shown in a separate panel or shared as a standalone link. Can be documents, visualisations, or interactive web-apps. Shareable with anyone who has LSE Claude account access. ChatGPT and Google Gemini have similar features called 'Canvas'."
             },
             {
                 term: "Role and goal (prompting technique)",
@@ -584,11 +587,11 @@
             },
             {
                 term: "System Prompt",
-                definition: "Instructions that control an LLM's behavior in every chat. Many companies keep these secret, but Anthropic makes Claude's system prompts publicly available on their website. Useful for understanding LLM behavior and improving your own prompts."
+                definition: "Instructions that control an LLM's behaviour in every chat. Many companies keep these secret, but Anthropic makes Claude's system prompts publicly available on their website. Useful for understanding LLM behaviour and improving your own prompts."
             },
             {
                 term: "Claude Project",
-                definition: "Claude Projects are essentially custom versions of Claude you can set up with your own instructions and access to documents you upload. Similar to OpenAI's Custom GPTs, Microsoft Copilot Agents, Google Gemini Gems."
+                definition: "Claude Projects are essential custom versions of Claude you can set up with your own instructions and access to documents you upload. Similar to OpenAI's Custom GPTs, Microsoft Copilot Agents, Google Gemini Gems."
             },
             {
                 term: "Copilot Agent",
@@ -603,6 +606,19 @@
                 definition: "An AI model or series of models that can use tools (like coding tools or web browsers) and act autonomously toward a goal. Note: 'Copilot Agent' is a slightly misleading name for a feature in Copilot that is more of a custom chatbot that a real 'Agent'. Copilot Agents are similar to Claude Projects or OpenAI's Custom GPTs."
             }
         ];
+        
+        // Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+        
+        // Combine base cards with shuffled randomizable cards
+        const flashcards = [...baseFlashcards, ...shuffleArray(randomizableFlashcards)];
         
         let currentPlayer = '';
         let currentCardIndex = 0;
