@@ -454,6 +454,11 @@
             .completion-message {
                 font-size: 16px;
             }
+            
+            #set-number-input {
+                font-size: 16px !important;
+                padding: 10px !important;
+            }
         }
     </style>
 </head>
@@ -471,11 +476,40 @@
                 <strong>Welcome!</strong> One player should choose "Player A" and the other should choose "Player B". You'll take turns explaining terms to each other.
             </div>
             <div class="player-selection">
-                <button class="player-button player-a" onclick="startGame('A')" tabindex="0">
+                <button class="player-button player-a" onclick="selectPlayer('A')" tabindex="0">
                     I'm Player A
                 </button>
-                <button class="player-button player-b" onclick="startGame('B')" tabindex="0">
+                <button class="player-button player-b" onclick="selectPlayer('B')" tabindex="0">
                     I'm Player B
+                </button>
+            </div>
+        </div>
+        
+        <!-- Set Selection Screen -->
+        <div id="set-selection" class="set-selection-screen" style="display: none;" role="region" aria-labelledby="set-selection-heading">
+            <h2 id="set-selection-heading" class="sr-only">Game Set Selection</h2>
+            <div id="set-message" class="instructions" aria-live="polite"></div>
+            <div id="set-input-container" style="display: none; margin-bottom: 20px;">
+                <label for="set-number-input" style="display: block; margin-bottom: 10px; font-weight: 600; color: #2d3748;">
+                    Enter the set number (1-10):
+                </label>
+                <input 
+                    type="number" 
+                    id="set-number-input" 
+                    min="1" 
+                    max="10" 
+                    style="width: 100%; padding: 12px; font-size: 18px; border: 2px solid #cbd5e0; border-radius: 8px; text-align: center;"
+                    placeholder="Enter number"
+                    aria-describedby="set-error"
+                />
+                <div id="set-error" style="color: #e53e3e; margin-top: 10px; display: none; font-weight: 600;" role="alert" aria-live="assertive"></div>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn btn-secondary" onclick="backToPlayerSelection()" tabindex="0">
+                    Back
+                </button>
+                <button class="btn" id="continue-btn" onclick="continueToGame()" tabindex="0">
+                    Continue
                 </button>
             </div>
         </div>
@@ -536,8 +570,8 @@
     </div>
     
     <script>
-        // Flashcard data - LLM and Prompt always first, rest randomized
-        const baseFlashcards = [
+        // Base cards that always come first
+        const baseCards = [
             {
                 term: "LLM (Large-language model)",
                 definition: "An LLM is a Large-Language Model, a type of Generative AI that has been trained on lots of examples of text so that it can identify statistical patterns between words and ideas and consequently generate new text based on these patterns."
@@ -548,7 +582,8 @@
             }
         ];
         
-        const randomizableFlashcards = [
+        // All other cards to be shuffled into different sets
+        const allOtherCards = [
             {
                 term: "Hallucinate",
                 definition: "When an LLM confidently states something plausible but completely fabricated. Occurs because models create statistically probable content rather than necessarily 'correct' content. Not all AI mistakes are hallucinations; some mistakes are based on incorrect data."
@@ -607,27 +642,122 @@
             }
         ];
         
-        // Fisher-Yates shuffle algorithm
-        function shuffleArray(array) {
+        // Fisher-Yates shuffle with seed
+        function seededShuffle(array, seed) {
             const shuffled = [...array];
+            let currentSeed = seed;
+            
+            // Simple seeded random number generator
+            function seededRandom() {
+                currentSeed = (currentSeed * 9301 + 49297) % 233280;
+                return currentSeed / 233280;
+            }
+            
             for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
+                const j = Math.floor(seededRandom() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
             return shuffled;
         }
         
-        // Combine base cards with shuffled randomizable cards
-        const flashcards = [...baseFlashcards, ...shuffleArray(randomizableFlashcards)];
+        // Generate 10 pre-set randomized orders
+        const cardSets = {};
+        for (let i = 1; i <= 10; i++) {
+            cardSets[i] = [...baseCards, ...seededShuffle(allOtherCards, i * 1000)];
+        }
+        
+        let flashcards = [];
+        let selectedSet = null;
         
         let currentPlayer = '';
         let currentCardIndex = 0;
         let playerARole = 'explainer'; // 'explainer' or 'listener'
         let instructionsOpen = false;
+        let pendingPlayer = null;
         
         function announce(message) {
             const announcementDiv = document.getElementById('announcements');
             announcementDiv.textContent = message;
+        }
+        
+        function selectPlayer(player) {
+            pendingPlayer = player;
+            
+            // Hide player selection screen
+            document.getElementById('player-selection').style.display = 'none';
+            
+            // Show set selection screen
+            const setSelectionScreen = document.getElementById('set-selection');
+            const setMessage = document.getElementById('set-message');
+            const setInputContainer = document.getElementById('set-input-container');
+            
+            setSelectionScreen.style.display = 'block';
+            
+            if (player === 'A') {
+                // Player A: randomly select and show set number
+                selectedSet = Math.floor(Math.random() * 10) + 1;
+                flashcards = cardSets[selectedSet];
+                
+                setMessage.innerHTML = `<strong>Player A:</strong> Your game set number is <strong style="font-size: 24px; color: #667eea;">${selectedSet}</strong><br><br>Tell Player B to enter this number when they start.`;
+                setInputContainer.style.display = 'none';
+                
+                announce(`You are Player A. Your set number is ${selectedSet}.`);
+            } else {
+                // Player B: show input for set number
+                setMessage.innerHTML = `<strong>Player B:</strong> Enter the set number that Player A told you.`;
+                setInputContainer.style.display = 'block';
+                document.getElementById('set-error').style.display = 'none';
+                
+                announce('You are Player B. Please enter the set number.');
+                
+                // Focus on input
+                setTimeout(() => {
+                    document.getElementById('set-number-input').focus();
+                }, 100);
+            }
+        }
+        
+        function backToPlayerSelection() {
+            document.getElementById('set-selection').style.display = 'none';
+            document.getElementById('player-selection').style.display = 'block';
+            document.getElementById('set-number-input').value = '';
+            document.getElementById('set-error').style.display = 'none';
+            pendingPlayer = null;
+            selectedSet = null;
+        }
+        
+        function continueToGame() {
+            if (pendingPlayer === 'B') {
+                // Validate Player B's input
+                const input = document.getElementById('set-number-input').value;
+                const setNum = parseInt(input);
+                const errorDiv = document.getElementById('set-error');
+                
+                if (!input || isNaN(setNum) || setNum < 1 || setNum > 10) {
+                    errorDiv.textContent = 'Please enter a valid number between 1 and 10.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                selectedSet = setNum;
+                flashcards = cardSets[selectedSet];
+            }
+            
+            // Start the game
+            startGame(pendingPlayer);
+        }
+        
+        function startGame(player) {
+            currentPlayer = player;
+            currentCardIndex = 0;
+            playerARole = 'explainer';
+            instructionsOpen = false;
+            
+            document.getElementById('set-selection').style.display = 'none';
+            document.getElementById('game-area').classList.add('active');
+            
+            announce(`Game started. You are Player ${player}. Using set ${selectedSet}. Loading first card.`);
+            displayCard();
         }
         
         function toggleInstructions() {
@@ -645,19 +775,6 @@
                 icon.classList.remove('open');
                 toggleText.textContent = 'Show Instructions';
             }
-        }
-        
-        function startGame(player) {
-            currentPlayer = player;
-            currentCardIndex = 0;
-            playerARole = 'explainer'; // Player A starts as explainer
-            instructionsOpen = false;
-            
-            document.getElementById('player-selection').style.display = 'none';
-            document.getElementById('game-area').classList.add('active');
-            
-            announce(`Game started. You are Player ${player}. Loading first card.`);
-            displayCard();
         }
         
         function displayCard() {
@@ -737,10 +854,16 @@
             currentCardIndex = 0;
             playerARole = 'explainer';
             instructionsOpen = false;
+            selectedSet = null;
+            flashcards = [];
+            pendingPlayer = null;
             
             document.getElementById('completion-screen').classList.remove('active');
             document.getElementById('game-area').classList.remove('active');
+            document.getElementById('set-selection').style.display = 'none';
             document.getElementById('player-selection').style.display = 'block';
+            document.getElementById('set-number-input').value = '';
+            document.getElementById('set-error').style.display = 'none';
             
             announce('Game reset. Please select your player.');
         }
@@ -769,6 +892,9 @@
                 if (activeElement.tagName === 'BUTTON') {
                     e.preventDefault();
                     activeElement.click();
+                } else if (activeElement.id === 'set-number-input' && e.key === 'Enter') {
+                    e.preventDefault();
+                    continueToGame();
                 }
             }
         });
