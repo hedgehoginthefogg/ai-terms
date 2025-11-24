@@ -400,6 +400,12 @@
                 font-size: 12px;
                 flex-wrap: wrap;
                 gap: 8px;
+                justify-content: space-between;
+            }
+            
+            #set-number-display {
+                flex-basis: 100%;
+                text-align: center;
             }
             
             .term {
@@ -523,7 +529,8 @@
                 
                 <div class="card-info">
                     <span class="current-player">Current: <span id="current-player-name"></span></span>
-                    <span id="card-counter">Card 1 of 16</span>
+                    <span id="card-counter">Card 1 of 18</span>
+                    <span id="set-number-display" style="color: #667eea; font-weight: 600;"></span>
                 </div>
             </div>
             
@@ -560,7 +567,7 @@
             <div class="completion-icon">🎉</div>
             <h2 class="completion-title">Congratulations!</h2>
             <p class="completion-message">
-                You've completed all 16 AI terms together!<br>
+                You've completed all 18 AI terms together!<br>
                 Great teamwork!
             </p>
             <button class="btn" onclick="resetGame()" tabindex="0">
@@ -639,6 +646,14 @@
             {
                 term: "Agent / Agentic",
                 definition: "An AI model or series of models that can use tools (like coding tools or web browsers) and act autonomously toward a goal. Note: 'Copilot Agent' is a slightly misleading name for a feature in Copilot that is more of a custom chatbot that a real 'Agent'. Copilot Agents are similar to Claude Projects or OpenAI's Custom GPTs."
+            },
+            {
+                term: "Prompt injection",
+                definition: "Prompt injection is a security exploit where an attacker hides malicious instructions for an LLM within a piece of content (e.g., a webpage or email). When the LLM processes that content, it is exposed to the hidden instructions."
+            },
+            {
+                term: "Grounding",
+                definition: "Grounding refers to asking a chatbot to only answer using information in specific sources, such as documents you've uploaded to a Claude project. This is a good way to reduce 'hallucinations', which can occur when it creates answers purely based on statistical patterns from its training data."
             }
         ];
         
@@ -756,6 +771,9 @@
             document.getElementById('set-selection').style.display = 'none';
             document.getElementById('game-area').classList.add('active');
             
+            // Display the set number
+            document.getElementById('set-number-display').textContent = `Set: ${selectedSet}`;
+            
             announce(`Game started. You are Player ${player}. Using set ${selectedSet}. Loading first card.`);
             displayCard();
         }
@@ -806,9 +824,12 @@
                 announce(`Your turn to explain. The term is: ${card.term}`);
             } else {
                 roleLabel.textContent = 'The Definition (Listen & Help)';
-                cardContent.innerHTML = `<div class="definition">${card.definition}</div>`;
-                instructionsText.innerHTML = `<strong>Your role:</strong> Listen to your partner's explanation of the term. If they need help, provide hints or read the correct definition to them.`;
-                announce(`Your turn to listen and help. You have the definition for the term your partner is explaining.`);
+                cardContent.innerHTML = `
+                    <div class="term" style="font-size: 22px; margin-bottom: 15px; color: #4a5568;">${card.term}</div>
+                    <div class="definition">${card.definition}</div>
+                `;
+                instructionsText.innerHTML = `<strong>Your role:</strong> Listen to your partner explain "<strong>${card.term}</strong>". If they need help, provide hints or read the correct definition to them.`;
+                announce(`Your turn to listen and help. The term is: ${card.term}. You have the definition.`);
             }
             
             // Reset instructions to closed state for new card
